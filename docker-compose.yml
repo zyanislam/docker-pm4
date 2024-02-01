@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  web:
+    build:
+      context: .
+    ports:
+      - "${PM_APP_PORT}:80"
+      - "${PM_BROADCASTER_PORT}:6001"
+    environment:
+      - PM_APP_URL
+      - PM_APP_PORT
+      - PM_BROADCASTER_PORT
+    volumes:
+      - "${PM_DOCKER_SOCK}:/var/run/docker.sock"
+      - storage:/code/pm4/storage
+    depends_on:
+      - mysql
+      - redis 
+    networks:
+      - processmaker
+      
+  redis:
+    image: redis
+    networks:
+      - processmaker
+      
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password 
+      MYSQL_DATABASE: processmaker
+      MYSQL_USER: pm
+      MYSQL_PASSWORD: pass
+    volumes:
+      - database:/var/lib/mysql
+    networks:
+      - processmaker
+
+volumes:
+  database:
+  storage:
+  
+networks:
+  processmaker:
+    # driver: bridge (optional, as it's the default)
